@@ -8,7 +8,8 @@ import {
   BookOpen,
   CodeXml,
   ArrowRight,
-  Sparkles
+  Sparkles,
+  Swords
 } from "lucide-react";
 
 export const revalidate = 60;
@@ -83,6 +84,12 @@ export default async function Home() {
                 <button className="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 hover:bg-secondary hover:text-secondary-foreground h-10 px-4 py-2 gap-2">
                   <Users className="w-4 h-4" />
                   Builders
+                </button>
+              </a>
+              <a href="/spar">
+                <button className="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 hover:bg-secondary hover:text-secondary-foreground h-10 px-4 py-2 gap-2">
+                  <Swords className="w-4 h-4" />
+                  Spar Mode
                 </button>
               </a>
             </div>
