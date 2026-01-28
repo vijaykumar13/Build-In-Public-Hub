@@ -19,8 +19,14 @@ export function CommitFeed({
   const [isLoading, setIsLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
-  const fetchCommits = async () => {
+  const syncAndFetch = async () => {
     try {
+      // Trigger sync from GitHub (only does work if spar is active)
+      if (autoRefresh) {
+        await fetch(`/api/spar/${sparId}/sync`, { method: "POST" });
+      }
+
+      // Then fetch the latest commits
       const res = await fetch(`/api/spar/${sparId}/commits`);
       const data = await res.json();
       setCommits(data.commits || []);
@@ -33,10 +39,10 @@ export function CommitFeed({
   };
 
   useEffect(() => {
-    fetchCommits();
+    syncAndFetch();
 
     if (autoRefresh) {
-      const interval = setInterval(fetchCommits, refreshInterval);
+      const interval = setInterval(syncAndFetch, refreshInterval);
       return () => clearInterval(interval);
     }
   }, [sparId, autoRefresh, refreshInterval]);
@@ -79,7 +85,7 @@ export function CommitFeed({
           <span className="text-sm text-muted-foreground">({commits.length})</span>
         </div>
         <button
-          onClick={fetchCommits}
+          onClick={syncAndFetch}
           className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
           title="Refresh"
         >

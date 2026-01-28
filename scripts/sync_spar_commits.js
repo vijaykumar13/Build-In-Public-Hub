@@ -1,3 +1,10 @@
+// Manual fallback script for syncing spar commits.
+// In production, syncing happens automatically via the API route
+// POST /api/spar/[id]/sync, triggered by the CommitFeed component
+// every 30s while a spar is active. No cron job needed.
+//
+// Run manually if needed: node scripts/sync_spar_commits.js
+
 import { Octokit } from "@octokit/rest";
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
