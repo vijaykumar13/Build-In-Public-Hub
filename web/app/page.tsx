@@ -9,7 +9,15 @@ import {
   CodeXml,
   ArrowRight,
   Sparkles,
-  Swords
+  Swords,
+  Mic,
+  Video,
+  Trophy,
+  ExternalLink,
+  FileText,
+  Podcast,
+  MessageSquare,
+  GraduationCap
 } from "lucide-react";
 
 export const revalidate = 60;
@@ -224,6 +232,178 @@ export default async function Home() {
           </div>
 
           <Leaderboard developers={developers.slice(0, 6)} />
+        </div>
+      </section>
+
+      {/* Upcoming Events Section */}
+      <section className="py-20 hero-gradient relative overflow-hidden">
+        <div className="absolute top-10 right-20 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
+        <div className="container mx-auto px-4 relative">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-bold">Upcoming Events</h2>
+              <p className="text-muted-foreground mt-1">Join live sessions, workshops, and community meetups</p>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Event 1 */}
+            <div className="glass-card rounded-xl p-6 group hover:border-primary/30 transition-all duration-300">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                  <Mic className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-400/10 text-green-400">Live</span>
+                </div>
+              </div>
+              <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
+                Build in Public AMA
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                Ask anything about building in public, growing an audience, and shipping products.
+              </p>
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="w-4 h-4" />
+                  <span>Feb 5, 2026 · 7:00 PM EST</span>
+                </div>
+                <span className="text-xs text-primary font-medium">Free</span>
+              </div>
+            </div>
+
+            {/* Event 2 */}
+            <div className="glass-card rounded-xl p-6 group hover:border-primary/30 transition-all duration-300">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                  <Video className="w-6 h-6 text-accent" />
+                </div>
+                <div>
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-400/10 text-blue-400">Workshop</span>
+                </div>
+              </div>
+              <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
+                Ship Your MVP in 48 Hours
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                Hands-on workshop: go from idea to deployed product in a weekend. Live coding included.
+              </p>
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="w-4 h-4" />
+                  <span>Feb 8, 2026 · 10:00 AM EST</span>
+                </div>
+                <span className="text-xs text-primary font-medium">Free</span>
+              </div>
+            </div>
+
+            {/* Event 3 */}
+            <div className="glass-card rounded-xl p-6 group hover:border-primary/30 transition-all duration-300">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-yellow-400/10 flex items-center justify-center group-hover:bg-yellow-400/20 transition-colors">
+                  <Trophy className="w-6 h-6 text-yellow-400" />
+                </div>
+                <div>
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-yellow-400/10 text-yellow-400">Competition</span>
+                </div>
+              </div>
+              <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
+                Weekend Spar Challenge
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                48-hour coding battle. Challenge a friend, ship features, and claim the top spot.
+              </p>
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="w-4 h-4" />
+                  <span>Feb 15, 2026 · All Day</span>
+                </div>
+                <span className="text-xs text-primary font-medium">Free</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Community Resources Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="text-3xl font-bold">Community Resources</h2>
+              <p className="text-muted-foreground mt-1">Guides, tools, and content to help you build in public</p>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Resource 1 */}
+            <div className="glass-card rounded-xl p-6 group hover:border-primary/30 transition-all duration-300 cursor-pointer">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors mb-4">
+                <GraduationCap className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="font-semibold group-hover:text-primary transition-colors">
+                Getting Started Guide
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                Everything you need to know to start building in public effectively.
+              </p>
+              <div className="flex items-center gap-1 mt-4 text-sm text-primary">
+                <span>Read guide</span>
+                <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+
+            {/* Resource 2 */}
+            <div className="glass-card rounded-xl p-6 group hover:border-primary/30 transition-all duration-300 cursor-pointer">
+              <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors mb-4">
+                <FileText className="w-6 h-6 text-accent" />
+              </div>
+              <h3 className="font-semibold group-hover:text-primary transition-colors">
+                Tweet Templates
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                50+ proven templates for sharing your progress and growing your audience.
+              </p>
+              <div className="flex items-center gap-1 mt-4 text-sm text-primary">
+                <span>Get templates</span>
+                <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+
+            {/* Resource 3 */}
+            <div className="glass-card rounded-xl p-6 group hover:border-primary/30 transition-all duration-300 cursor-pointer">
+              <div className="w-12 h-12 rounded-xl bg-blue-400/10 flex items-center justify-center group-hover:bg-blue-400/20 transition-colors mb-4">
+                <Podcast className="w-6 h-6 text-blue-400" />
+              </div>
+              <h3 className="font-semibold group-hover:text-primary transition-colors">
+                Builder Podcast
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                Weekly interviews with top builders sharing their strategies and lessons.
+              </p>
+              <div className="flex items-center gap-1 mt-4 text-sm text-primary">
+                <span>Listen now</span>
+                <ArrowRight className="w-3 h-3" />
+              </div>
+            </div>
+
+            {/* Resource 4 */}
+            <div className="glass-card rounded-xl p-6 group hover:border-primary/30 transition-all duration-300 cursor-pointer">
+              <div className="w-12 h-12 rounded-xl bg-yellow-400/10 flex items-center justify-center group-hover:bg-yellow-400/20 transition-colors mb-4">
+                <MessageSquare className="w-6 h-6 text-yellow-400" />
+              </div>
+              <h3 className="font-semibold group-hover:text-primary transition-colors">
+                Community Discord
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                Join 500+ builders for feedback, accountability, and collaboration.
+              </p>
+              <div className="flex items-center gap-1 mt-4 text-sm text-primary">
+                <span>Join server</span>
+                <ExternalLink className="w-3 h-3" />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
