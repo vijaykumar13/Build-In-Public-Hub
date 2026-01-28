@@ -208,7 +208,7 @@ export default async function Home() {
               <h2 className="text-3xl font-bold">Top Builders</h2>
               <p className="text-muted-foreground mt-1">This month's most active community members</p>
             </div>
-            <a href="#builders">
+            <a href="/builders">
               <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 hover:bg-secondary hover:text-secondary-foreground h-10 px-4 py-2 group">
                 View All
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
