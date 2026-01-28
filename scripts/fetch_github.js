@@ -140,4 +140,10 @@ async function updateDatabase(stats) {
     }
 }
 
-main();
+// Export for use in scheduler
+module.exports = { main, fetchGitHubData, updateDatabase, DEVELOPERS_TO_TRACK };
+
+// Run directly if this file is executed
+if (require.main === module) {
+    main();
+}

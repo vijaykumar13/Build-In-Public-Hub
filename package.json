@@ -4,7 +4,13 @@
   "description": "A \"Proof of Work\" dashboard for indie hackers that aggregates stats from GitHub, X, and Product Hunt.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "fetch": "node scripts/fetch_github.js",
+    "fetch:twitter": "node scripts/fetch_twitter.js",
+    "fetch:twitter:mock": "node scripts/fetch_twitter.js --mock",
+    "scheduler": "node scripts/ingest_scheduler.js",
+    "scheduler:now": "node scripts/ingest_scheduler.js --now",
+    "scheduler:test": "node scripts/ingest_scheduler.js --now --test"
   },
   "keywords": [],
   "author": "",
@@ -13,6 +19,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.91.1",
     "dotenv": "^17.2.3",
-    "octokit": "^5.0.5"
+    "node-cron": "^4.2.1",
+    "octokit": "^5.0.5",
+    "twitter-api-v2": "^1.29.0"
   }
 }
