@@ -22,7 +22,7 @@ import {
 
 export const revalidate = 60;
 
-async function getLeaderboardData(): Promise<Developer[]> {
+async function getLeaderboardData(): Promise<{ developers: Developer[]; lastUpdated: string | null }> {
   const { data: developers, error } = await supabase
     .from('developers')
     .select(`
@@ -39,15 +39,24 @@ async function getLeaderboardData(): Promise<Developer[]> {
 
   if (error) {
     console.error('Error fetching leaderboard:', error);
-    return [];
+    return { developers: [], lastUpdated: null };
   }
 
-  return developers.map((dev, index) => {
+  let lastUpdated: string | null = null;
+
+  const mapped = developers.map((dev, index) => {
     const sortedStats = (dev.stats_history || []).sort(
       (a: { recorded_at: string }, b: { recorded_at: string }) =>
         new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime()
     );
     const latestStats = sortedStats[0] || {};
+
+    // Track the most recent recorded_at across all developers
+    if (latestStats.recorded_at) {
+      if (!lastUpdated || new Date(latestStats.recorded_at) > new Date(lastUpdated)) {
+        lastUpdated = latestStats.recorded_at;
+      }
+    }
 
     return {
       rank: index + 1,
@@ -63,12 +72,25 @@ async function getLeaderboardData(): Promise<Developer[]> {
       bio: dev.bio || ''
     };
   });
+
+  return { developers: mapped, lastUpdated };
 }
 
 export default async function Home() {
-  const developers = await getLeaderboardData();
+  const { developers, lastUpdated } = await getLeaderboardData();
   const totalCommits = developers.reduce((acc, d) => acc + d.consistencyScore, 0);
   const totalFollowers = developers.reduce((acc, d) => acc + (d.followers || 0), 0);
+
+  // Format last updated time
+  const lastUpdatedText = lastUpdated
+    ? new Date(lastUpdated).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+    : 'N/A';
 
   return (
     <div className="min-h-screen">
@@ -208,6 +230,7 @@ export default async function Home() {
               </div>
               <div className="mt-4">
                 <p className="text-3xl font-bold gradient-text">24/7</p>
+                <span className="text-xs text-accent font-medium">{lastUpdatedText}</span>
               </div>
               <p className="text-sm text-muted-foreground mt-1">Live Updates</p>
             </div>
