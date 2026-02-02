@@ -1,9 +1,7 @@
 import Stripe from 'stripe';
 
 // Server-side Stripe instance
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-01-27.acacia',
-});
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '');
 
 // Check if payments are enabled
 export const PAYMENTS_ENABLED = process.env.SPAR_PAYMENTS_ENABLED === 'true';
