@@ -9,10 +9,17 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
     callbacks: {
+        async jwt({ token, profile }) {
+            // Store GitHub login username in token on first sign-in
+            if (profile) {
+                token.username = (profile as any).login;
+            }
+            return token;
+        },
         async session({ session, token }) {
-            // Include user ID in session for DB lookups
             if (session?.user) {
                 (session.user as any).id = token.sub;
+                (session.user as any).username = token.username;
             }
             return session;
         }

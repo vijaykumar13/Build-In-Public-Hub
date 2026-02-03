@@ -1,6 +1,7 @@
 import { Leaderboard, Developer } from "@/components/Leaderboard";
 import { supabase } from "@/lib/supabase";
 import { AuthButton } from "@/components/AuthButton";
+import { HomepageResources } from "@/components/HomepageResources";
 import {
   Users,
   Rocket,
@@ -13,14 +14,32 @@ import {
   Mic,
   Video,
   Trophy,
-  ExternalLink,
-  FileText,
-  Podcast,
-  MessageSquare,
-  GraduationCap
 } from "lucide-react";
 
 export const revalidate = 60;
+
+interface Resource {
+  id: string;
+  title: string;
+  description: string | null;
+  type: string;
+  url: string | null;
+  icon_name: string;
+}
+
+async function getFeaturedResources(): Promise<Resource[]> {
+  const { data, error } = await supabase
+    .from("resources")
+    .select("id, title, description, type, url, icon_name")
+    .eq("featured", true)
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching resources:", error);
+    return [];
+  }
+  return data || [];
+}
 
 async function getLeaderboardData(): Promise<{ developers: Developer[]; lastUpdated: string | null }> {
   const { data: developers, error } = await supabase
@@ -77,7 +96,10 @@ async function getLeaderboardData(): Promise<{ developers: Developer[]; lastUpda
 }
 
 export default async function Home() {
-  const { developers, lastUpdated } = await getLeaderboardData();
+  const [{ developers, lastUpdated }, featuredResources] = await Promise.all([
+    getLeaderboardData(),
+    getFeaturedResources(),
+  ]);
   const totalCommits = developers.reduce((acc, d) => acc + d.consistencyScore, 0);
   const totalFollowers = developers.reduce((acc, d) => acc + (d.followers || 0), 0);
 
@@ -120,6 +142,12 @@ export default async function Home() {
                 <button className="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 hover:bg-secondary hover:text-secondary-foreground h-10 px-4 py-2 gap-2">
                   <Swords className="w-4 h-4" />
                   Spar Mode
+                </button>
+              </a>
+              <a href="/resources">
+                <button className="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 hover:bg-secondary hover:text-secondary-foreground h-10 px-4 py-2 gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  Resources
                 </button>
               </a>
             </div>
@@ -349,86 +377,26 @@ export default async function Home() {
       </section>
 
       {/* Community Resources Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-bold">Community Resources</h2>
-              <p className="text-muted-foreground mt-1">Guides, tools, and content to help you build in public</p>
+      {featuredResources.length > 0 && (
+        <section className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h2 className="text-3xl font-bold">Community Resources</h2>
+                <p className="text-muted-foreground mt-1">Guides, tools, and content to help you build in public</p>
+              </div>
+              <a href="/resources">
+                <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-200 hover:bg-secondary hover:text-secondary-foreground h-10 px-4 py-2 group">
+                  View All
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+              </a>
             </div>
+
+            <HomepageResources resources={featuredResources} />
           </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Resource 1 */}
-            <div className="glass-card rounded-xl p-6 group hover:border-primary/30 transition-all duration-300 cursor-pointer">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors mb-4">
-                <GraduationCap className="w-6 h-6 text-primary" />
-              </div>
-              <h3 className="font-semibold group-hover:text-primary transition-colors">
-                Getting Started Guide
-              </h3>
-              <p className="text-sm text-muted-foreground mt-2">
-                Everything you need to know to start building in public effectively.
-              </p>
-              <div className="flex items-center gap-1 mt-4 text-sm text-primary">
-                <span>Read guide</span>
-                <ArrowRight className="w-3 h-3" />
-              </div>
-            </div>
-
-            {/* Resource 2 */}
-            <div className="glass-card rounded-xl p-6 group hover:border-primary/30 transition-all duration-300 cursor-pointer">
-              <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors mb-4">
-                <FileText className="w-6 h-6 text-accent" />
-              </div>
-              <h3 className="font-semibold group-hover:text-primary transition-colors">
-                Tweet Templates
-              </h3>
-              <p className="text-sm text-muted-foreground mt-2">
-                50+ proven templates for sharing your progress and growing your audience.
-              </p>
-              <div className="flex items-center gap-1 mt-4 text-sm text-primary">
-                <span>Get templates</span>
-                <ArrowRight className="w-3 h-3" />
-              </div>
-            </div>
-
-            {/* Resource 3 */}
-            <div className="glass-card rounded-xl p-6 group hover:border-primary/30 transition-all duration-300 cursor-pointer">
-              <div className="w-12 h-12 rounded-xl bg-blue-400/10 flex items-center justify-center group-hover:bg-blue-400/20 transition-colors mb-4">
-                <Podcast className="w-6 h-6 text-blue-400" />
-              </div>
-              <h3 className="font-semibold group-hover:text-primary transition-colors">
-                Builder Podcast
-              </h3>
-              <p className="text-sm text-muted-foreground mt-2">
-                Weekly interviews with top builders sharing their strategies and lessons.
-              </p>
-              <div className="flex items-center gap-1 mt-4 text-sm text-primary">
-                <span>Listen now</span>
-                <ArrowRight className="w-3 h-3" />
-              </div>
-            </div>
-
-            {/* Resource 4 */}
-            <div className="glass-card rounded-xl p-6 group hover:border-primary/30 transition-all duration-300 cursor-pointer">
-              <div className="w-12 h-12 rounded-xl bg-yellow-400/10 flex items-center justify-center group-hover:bg-yellow-400/20 transition-colors mb-4">
-                <MessageSquare className="w-6 h-6 text-yellow-400" />
-              </div>
-              <h3 className="font-semibold group-hover:text-primary transition-colors">
-                Community Discord
-              </h3>
-              <p className="text-sm text-muted-foreground mt-2">
-                Join 500+ builders for feedback, accountability, and collaboration.
-              </p>
-              <div className="flex items-center gap-1 mt-4 text-sm text-primary">
-                <span>Join server</span>
-                <ExternalLink className="w-3 h-3" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="border-t border-border py-12">
