@@ -229,10 +229,10 @@ export default async function Home() {
                 <BookOpen className="w-6 h-6 text-primary" />
               </div>
               <div className="mt-4">
-                <p className="text-3xl font-bold gradient-text">24/7</p>
-                <span className="text-xs text-accent font-medium">{lastUpdatedText}</span>
+                <p className="text-3xl font-bold gradient-text">24/7</p>                
               </div>
               <p className="text-sm text-muted-foreground mt-1">Live Updates</p>
+              <span className="text-xs text-accent font-medium">Updated: {lastUpdatedText}</span>
             </div>
           </div>
         </div>
