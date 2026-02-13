@@ -6,6 +6,8 @@ on:
     - cron: '0 2 * * *'
     # Builder discovery - weekly on Mondays at 3 AM UTC
     - cron: '0 3 * * 1'
+    # Hashtag monitoring (auto-add) - every 6 hours
+    - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
       script:
@@ -17,6 +19,7 @@ on:
           - all
           - fetch_twitter
           - discover_builders
+          - monitor_hashtags
 
 jobs:
   fetch-twitter:
@@ -70,3 +73,24 @@ jobs:
           name: discovered-builders-${{ github.run_number }}
           path: data/
           retention-days: 30
+
+  monitor-hashtags:
+    name: Monitor BIP Hashtags
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 */6 * * *' || github.event_name == 'workflow_dispatch' && (inputs.script == 'all' || inputs.script == 'monitor_hashtags')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run hashtag monitor
+        env:
+          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/monitor_hashtags.js

@@ -12,7 +12,9 @@
     "scheduler:now": "node scripts/ingest_scheduler.js --now",
     "scheduler:test": "node scripts/ingest_scheduler.js --now --test",
     "discover": "node scripts/discover_builders.js",
-    "discover:mock": "node scripts/discover_builders.js --mock"
+    "discover:mock": "node scripts/discover_builders.js --mock",
+    "monitor": "node scripts/monitor_hashtags.js",
+    "monitor:mock": "node scripts/monitor_hashtags.js --mock"
   },
   "keywords": [],
   "author": "",
