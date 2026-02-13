@@ -1,6 +1,8 @@
 "use client";
 
 import { Trophy, GitBranch, Star, ExternalLink } from "lucide-react";
+import { ShareButton } from "@/components/ShareButton";
+import Link from "next/link";
 
 export type Developer = {
     rank: number;
@@ -60,10 +62,14 @@ export function Leaderboard({ developers }: LeaderboardProps) {
                 const trophyColor = getTrophyColor(dev.rank);
                 const isTopThree = dev.rank <= 3;
 
+                const profileUrl = `https://www.buildinpublichub.net/builder/${dev.username}`;
+                const tweetText = `I'm ranked #${dev.rank} on BuildInPublicHub! Check out my builder profile #buildinpublic`;
+
                 return (
-                    <div
+                    <Link
                         key={dev.username}
-                        className="group glass-card rounded-xl p-5 hover:border-primary/30 transition-all duration-300 hover:shadow-lg cursor-pointer"
+                        href={`/builder/${dev.username}`}
+                        className="group glass-card rounded-xl p-5 hover:border-primary/30 transition-all duration-300 hover:shadow-lg cursor-pointer block"
                     >
                         {/* Top Row: Trophy + Avatar + Name */}
                         <div className="flex items-start gap-4">
@@ -132,8 +138,13 @@ export function Leaderboard({ developers }: LeaderboardProps) {
                                     {dev.followers ? formatNumber(dev.followers) : '0'} followers
                                 </span>
                             </div>
+                            <ShareButton
+                                tweetText={tweetText}
+                                url={profileUrl}
+                                variant="compact"
+                            />
                         </div>
-                    </div>
+                    </Link>
                 );
             })}
         </div>
