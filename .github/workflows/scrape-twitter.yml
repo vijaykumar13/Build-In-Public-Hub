@@ -1,0 +1,72 @@
+name: Twitter Scraping & Builder Discovery
+
+on:
+  schedule:
+    # Twitter data fetch (existing members) - daily at 2 AM UTC
+    - cron: '0 2 * * *'
+    # Builder discovery - weekly on Mondays at 3 AM UTC
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      script:
+        description: 'Which script to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - fetch_twitter
+          - discover_builders
+
+jobs:
+  fetch-twitter:
+    name: Fetch Twitter Data
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 2 * * *' || github.event_name == 'workflow_dispatch' && (inputs.script == 'all' || inputs.script == 'fetch_twitter')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Twitter data fetch
+        env:
+          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/fetch_twitter.js
+
+  discover-builders:
+    name: Discover New Builders
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 3 * * 1' || github.event_name == 'workflow_dispatch' && (inputs.script == 'all' || inputs.script == 'discover_builders')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create data directory
+        run: mkdir -p data
+
+      - name: Run builder discovery
+        env:
+          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/discover_builders.js --output json
+
+      - name: Upload discovery results
+        uses: actions/upload-artifact@v4
+        with:
+          name: discovered-builders-${{ github.run_number }}
+          path: data/
+          retention-days: 30

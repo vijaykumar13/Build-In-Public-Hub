@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/sync-stats",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/sync-twitter",
+      "schedule": "0 1 * * *"
     }
   ],
   "headers": [

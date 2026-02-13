@@ -10,7 +10,9 @@
     "fetch:twitter:mock": "node scripts/fetch_twitter.js --mock",
     "scheduler": "node scripts/ingest_scheduler.js",
     "scheduler:now": "node scripts/ingest_scheduler.js --now",
-    "scheduler:test": "node scripts/ingest_scheduler.js --now --test"
+    "scheduler:test": "node scripts/ingest_scheduler.js --now --test",
+    "discover": "node scripts/discover_builders.js",
+    "discover:mock": "node scripts/discover_builders.js --mock"
   },
   "keywords": [],
   "author": "",
