@@ -2,6 +2,8 @@ import { Leaderboard, Developer } from "@/components/Leaderboard";
 import { supabase } from "@/lib/supabase";
 import { AuthButton } from "@/components/AuthButton";
 import { HomepageResources } from "@/components/HomepageResources";
+import { MobileNav } from "@/components/MobileNav";
+import Link from "next/link";
 import {
   Users,
   Rocket,
@@ -152,8 +154,11 @@ export default async function Home() {
               </a>
             </div>
 
-            {/* Auth */}
+            {/* Auth - Desktop */}
             <AuthButton />
+
+            {/* Mobile Nav */}
+            <MobileNav />
           </div>
         </div>
       </nav>
@@ -198,14 +203,14 @@ export default async function Home() {
               className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8 animate-fade-in"
               style={{ animationDelay: '0.3s' }}
             >
-              <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap bg-primary text-primary-foreground font-semibold shadow-lg glow-primary hover:scale-105 hover:shadow-xl transition-all duration-300 h-14 rounded-xl px-10 text-lg">
+              <Link href="/api/auth/signin" className="inline-flex items-center justify-center gap-2 whitespace-nowrap bg-primary text-primary-foreground font-semibold shadow-lg glow-primary hover:scale-105 hover:shadow-xl transition-all duration-300 h-14 rounded-xl px-10 text-lg">
                 <Rocket className="w-5 h-5" />
                 Start Building
-              </button>
-              <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium border-2 border-primary/50 text-foreground hover:border-primary hover:bg-primary/10 transition-all duration-300 h-14 rounded-xl px-10 text-lg">
+              </Link>
+              <Link href="#builders" className="inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium border-2 border-primary/50 text-foreground hover:border-primary hover:bg-primary/10 transition-all duration-300 h-14 rounded-xl px-10 text-lg">
                 <CodeXml className="w-5 h-5" />
                 Explore Builders
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -220,7 +225,6 @@ export default async function Home() {
               </div>
               <div className="mt-4">
                 <p className="text-3xl font-bold gradient-text">{developers.length.toLocaleString()}</p>
-                <span className="text-xs text-accent font-medium">+12% this month</span>
               </div>
               <p className="text-sm text-muted-foreground mt-1">Active Builders</p>
             </div>
@@ -231,7 +235,6 @@ export default async function Home() {
               </div>
               <div className="mt-4">
                 <p className="text-3xl font-bold gradient-text">{totalCommits.toLocaleString()}</p>
-                <span className="text-xs text-accent font-medium">+8% this week</span>
               </div>
               <p className="text-sm text-muted-foreground mt-1">Commits Shipped</p>
             </div>
@@ -260,7 +263,9 @@ export default async function Home() {
                 <p className="text-3xl font-bold gradient-text">24/7</p>                
               </div>
               <p className="text-sm text-muted-foreground mt-1">Live Updates</p>
-              <span className="text-xs text-accent font-medium">Updated: {lastUpdatedText}</span>
+              {lastUpdated && (
+                <span className="text-xs text-accent font-medium">Updated: {lastUpdatedText}</span>
+              )}
             </div>
           </div>
         </div>
@@ -317,7 +322,7 @@ export default async function Home() {
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="w-4 h-4" />
-                  <span>Feb 5, 2026 · 7:00 PM EST</span>
+                  <span>Mar 5, 2026 · 7:00 PM EST</span>
                 </div>
                 <span className="text-xs text-primary font-medium">Free</span>
               </div>
@@ -342,7 +347,7 @@ export default async function Home() {
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="w-4 h-4" />
-                  <span>Feb 8, 2026 · 10:00 AM EST</span>
+                  <span>Mar 8, 2026 · 10:00 AM EST</span>
                 </div>
                 <span className="text-xs text-primary font-medium">Free</span>
               </div>
@@ -367,7 +372,7 @@ export default async function Home() {
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="w-4 h-4" />
-                  <span>Feb 15, 2026 · All Day</span>
+                  <span>Mar 15, 2026 · All Day</span>
                 </div>
                 <span className="text-xs text-primary font-medium">Free</span>
               </div>
@@ -401,18 +406,38 @@ export default async function Home() {
       {/* Footer */}
       <footer className="border-t border-border py-12">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                <CodeXml className="w-4 h-4 text-primary" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <CodeXml className="w-4 h-4 text-primary" />
+                </div>
+                <span className="font-bold">
+                  BuildInPublic<span className="text-primary">Hub</span>
+                </span>
               </div>
-              <span className="font-bold">
-                BuildInPublic<span className="text-primary">Hub</span>
-              </span>
+              <p className="text-sm text-muted-foreground">
+                A community for developers who build in public.
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              A community for developers who build in public.
-            </p>
+            <div>
+              <h4 className="font-semibold mb-3">Navigate</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="#builders" className="hover:text-foreground transition-colors">Builders</a></li>
+                <li><a href="/spar" className="hover:text-foreground transition-colors">Spar Mode</a></li>
+                <li><a href="/resources" className="hover:text-foreground transition-colors">Resources</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-3">Connect</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="https://github.com/vijaykumar13/Build-In-Public-Hub" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">GitHub</a></li>
+                <li><a href="https://twitter.com/BuildInPublicH" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Twitter / X</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-border/50 mt-8 pt-6 text-center text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} BuildInPublicHub. All rights reserved.
           </div>
         </div>
       </footer>
