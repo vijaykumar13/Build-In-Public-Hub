@@ -27,6 +27,7 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [error, setError] = useState("");
 
   // Form state
   const [fullName, setFullName] = useState("");
@@ -75,6 +76,7 @@ export default function OnboardingPage() {
 
   async function handleComplete() {
     setLoading(true);
+    setError("");
     try {
       const res = await fetch("/api/onboarding/complete", {
         method: "POST",
@@ -93,9 +95,12 @@ export default function OnboardingPage() {
       if (res.ok) {
         setStep(TOTAL_STEPS + 1); // Show success screen
         setTimeout(() => router.push("/"), 2000);
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Something went wrong. Please try again.");
       }
     } catch {
-      // Silently handle error
+      setError("Network error. Please try again.");
     }
     setLoading(false);
   }
@@ -146,6 +151,13 @@ export default function OnboardingPage() {
       {/* Main content */}
       <div className="flex-1 flex items-center justify-center p-4">
         <div className="w-full max-w-lg">
+          {/* Error message */}
+          {error && (
+            <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
+              {error}
+            </div>
+          )}
+
           {/* Progress bar */}
           <div className="flex items-center gap-2 mb-8">
             {Array.from({ length: TOTAL_STEPS }, (_, i) => (

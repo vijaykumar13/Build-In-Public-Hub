@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,6 +32,8 @@ export async function POST(request: NextRequest) {
     if (!full_name || full_name.trim().length === 0) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 });
     }
+
+    const supabase = getSupabaseAdmin();
 
     // Check if developer already exists
     const { data: existing } = await supabase

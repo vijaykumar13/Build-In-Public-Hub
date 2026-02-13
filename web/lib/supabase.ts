@@ -7,7 +7,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Service role client for admin operations (bypasses RLS)
-let _supabaseAdmin: ReturnType<typeof createClient> | null = null;
+let _supabaseAdmin: ReturnType<typeof createClient<any, 'public', any>> | null = null;
 
 export function getSupabaseAdmin() {
   if (!_supabaseAdmin) {

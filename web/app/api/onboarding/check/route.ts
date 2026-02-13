@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { supabase } from "@/lib/supabase";
+import { getSupabaseAdmin } from "@/lib/supabase";
 
 export async function GET() {
   try {
@@ -18,6 +18,7 @@ export async function GET() {
     }
 
     // Check if user exists in developers table
+    const supabase = getSupabaseAdmin();
     const { data: developer } = await supabase
       .from("developers")
       .select("id, username, full_name, bio")

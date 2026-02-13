@@ -126,10 +126,12 @@ export function ResourcesClient({ resources }: { resources: Resource[] }) {
             const iconColor =
               ICON_TEXT_COLORS[resource.type] || "text-primary";
 
+            const hasUrl = resource.url && resource.url !== "#";
+
             const card = (
               <div
                 key={resource.id}
-                className="glass-card rounded-xl p-6 group hover:border-primary/30 transition-all duration-300 cursor-pointer"
+                className={`glass-card rounded-xl p-6 group hover:border-primary/30 transition-all duration-300 ${hasUrl ? "cursor-pointer" : ""}`}
               >
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors mb-4 ${iconBg}`}
@@ -143,16 +145,18 @@ export function ResourcesClient({ resources }: { resources: Resource[] }) {
                   {resource.description || ""}
                 </p>
                 <div className="flex items-center justify-between mt-4">
-                  <div className="flex items-center gap-1 text-sm text-primary">
-                    <span>
-                      {resource.type === "community" ? "Join" : "View"}
-                    </span>
-                    {resource.url && resource.url !== "#" ? (
+                  {hasUrl ? (
+                    <div className="flex items-center gap-1 text-sm text-primary">
+                      <span>
+                        {resource.type === "community" ? "Join" : "View"}
+                      </span>
                       <ExternalLink className="w-3 h-3" />
-                    ) : (
-                      <ArrowRight className="w-3 h-3" />
-                    )}
-                  </div>
+                    </div>
+                  ) : (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                      Coming Soon
+                    </span>
+                  )}
                   <span
                     className={`text-xs px-2 py-0.5 rounded-full ${
                       TYPE_COLORS[resource.type] || "bg-secondary text-muted-foreground"
@@ -166,11 +170,11 @@ export function ResourcesClient({ resources }: { resources: Resource[] }) {
               </div>
             );
 
-            if (resource.url && resource.url !== "#") {
+            if (hasUrl) {
               return (
                 <a
                   key={resource.id}
-                  href={resource.url}
+                  href={resource.url!}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
