@@ -4,5 +4,16 @@
       "path": "/api/cron/sync-stats",
       "schedule": "0 */6 * * *"
     }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        }
+      ]
+    }
   ]
 }
