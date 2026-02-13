@@ -45,7 +45,7 @@ export function AuthButton() {
                 Sign In
             </button>
             <button
-                onClick={() => signIn("github")}
+                onClick={() => signIn("github", { callbackUrl: "/onboarding" })}
                 className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm bg-primary text-primary-foreground font-semibold shadow-lg glow-primary hover:scale-105 hover:shadow-xl transition-all duration-300 h-9 rounded-md px-3"
             >
                 Join Community

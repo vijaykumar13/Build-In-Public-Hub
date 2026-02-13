@@ -203,7 +203,7 @@ export default async function Home() {
               className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8 animate-fade-in"
               style={{ animationDelay: '0.3s' }}
             >
-              <Link href="/api/auth/signin" className="inline-flex items-center justify-center gap-2 whitespace-nowrap bg-primary text-primary-foreground font-semibold shadow-lg glow-primary hover:scale-105 hover:shadow-xl transition-all duration-300 h-14 rounded-xl px-10 text-lg">
+              <Link href="/api/auth/signin?callbackUrl=/onboarding" className="inline-flex items-center justify-center gap-2 whitespace-nowrap bg-primary text-primary-foreground font-semibold shadow-lg glow-primary hover:scale-105 hover:shadow-xl transition-all duration-300 h-14 rounded-xl px-10 text-lg">
                 <Rocket className="w-5 h-5" />
                 Start Building
               </Link>

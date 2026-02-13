@@ -53,7 +53,7 @@ export function MobileNav() {
                 Sign In
               </button>
               <button
-                onClick={() => { signIn("github"); setOpen(false); }}
+                onClick={() => { signIn("github", { callbackUrl: "/onboarding" }); setOpen(false); }}
                 className="inline-flex items-center justify-center gap-2 text-sm bg-primary text-primary-foreground font-semibold shadow-lg hover:scale-105 transition-all duration-300 h-10 rounded-lg px-4"
               >
                 Join Community
