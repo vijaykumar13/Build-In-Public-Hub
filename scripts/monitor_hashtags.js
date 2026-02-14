@@ -46,21 +46,41 @@ const BIP_HASHTAGS = [
 ];
 
 // Spam detection
-const SPAM_BIO_PATTERNS = /follow.?for.?follow|f4f|gain followers|crypto giveaway|dm me for/i;
-const SPAM_TWEET_PATTERNS = /buy now|click here|free money|earn \$|make money fast/i;
-const MIN_FOLLOWERS = 10;
-const MIN_TWEETS = 5;
+const SPAM_BIO_PATTERNS = /follow.?for.?follow|f4f|gain followers|crypto giveaway|dm me for|dm me|promo|follow back|18\+|onlyfans|casino|betting|crypto|nft|forex|trading|web3|airdrop|giveaway/i;
+const SPAM_TWEET_PATTERNS = /buy now|click here|free money|earn \$|make money fast|crypto|nft|airdrop|giveaway|whitelist|mint|token|telegram|join now|limited spots/i;
+// Bitcoin Improvement Proposal pattern — #BIP-110, #BIP-300, "running a node", etc.
+const BITCOIN_BIP_PATTERNS = /#BIP[- ]?\d|bitcoin|btc|node operator|full node|listening node|lightning network|satoshi|mempool|blockstream/i;
+const MIN_FOLLOWERS = 50;
+const MIN_TWEETS = 20;
+
+// Bio keywords that indicate legitimate indie developers (reused from discover_builders.js)
+const BUILDER_BIO_KEYWORDS = [
+    'build', 'indie', 'maker', 'founder', 'solo', 'bootstrap',
+    'saas', 'shipping', 'dev', 'developer', 'engineer', 'coding',
+    'startup', 'product', 'hacker', 'creator', 'ship', 'launch',
+    'open source', 'oss', 'nextjs', 'react', 'typescript',
+];
+
+function hasBuilderBio(bio) {
+    if (!bio) return false;
+    const lower = bio.toLowerCase();
+    return BUILDER_BIO_KEYWORDS.some(keyword => lower.includes(keyword));
+}
 
 function isSpam(user, tweetText) {
     if (user.public_metrics) {
         const { followers_count, following_count, tweet_count } = user.public_metrics;
         if (followers_count < MIN_FOLLOWERS) return true;
         if (tweet_count < MIN_TWEETS) return true;
-        // Suspicious ratio: follows way more than followers
-        if (following_count > 5000 && followers_count < 50) return true;
+        // Suspicious ratio: following 10x more than followers
+        if (following_count > 10 * followers_count) return true;
     }
     if (user.description && SPAM_BIO_PATTERNS.test(user.description)) return true;
     if (tweetText && SPAM_TWEET_PATTERNS.test(tweetText)) return true;
+    // Filter out Bitcoin Improvement Proposal tweets hijacking #BIP
+    if (tweetText && BITCOIN_BIP_PATTERNS.test(tweetText)) return true;
+    // Require at least one builder-related keyword in bio
+    if (!hasBuilderBio(user.description)) return true;
     return false;
 }
 
