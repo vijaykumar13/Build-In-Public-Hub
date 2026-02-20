@@ -8,6 +8,10 @@ on:
     - cron: '0 3 * * 1'
     # Hashtag monitoring (auto-add) - every 6 hours
     - cron: '0 */6 * * *'
+    # Follower scraping - weekly on Wednesdays at 3 AM UTC
+    - cron: '0 3 * * 3'
+    # Outreach pipeline - daily at 4 AM UTC
+    - cron: '0 4 * * *'
   workflow_dispatch:
     inputs:
       script:
@@ -20,6 +24,8 @@ on:
           - fetch_twitter
           - discover_builders
           - monitor_hashtags
+          - scrape_followers
+          - outreach_pipeline
 
 jobs:
   fetch-twitter:
@@ -94,3 +100,48 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/monitor_hashtags.js
+
+  scrape-followers:
+    name: Scrape Indie Hacker Followers
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 3 * * 3' || github.event_name == 'workflow_dispatch' && (inputs.script == 'all' || inputs.script == 'scrape_followers')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run follower scraper
+        env:
+          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/scrape_followers.js
+
+  outreach-pipeline:
+    name: Run Outreach Pipeline
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 4 * * *' || github.event_name == 'workflow_dispatch' && (inputs.script == 'all' || inputs.script == 'outreach_pipeline')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run outreach pipeline
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+          TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
+        run: node scripts/outreach_pipeline.js

@@ -17,6 +17,11 @@ import {
   ExternalLink,
   Eye,
   EyeOff,
+  Send,
+  CheckCircle,
+  XCircle,
+  Clock,
+  MessageSquare,
 } from "lucide-react";
 
 interface Resource {
@@ -30,6 +35,32 @@ interface Resource {
   featured: boolean;
   created_at: string;
   updated_at: string;
+}
+
+interface OutreachRecord {
+  id: string;
+  twitter_username: string;
+  twitter_user_id: string | null;
+  outreach_type: string;
+  outreach_status: "pending" | "sent" | "failed" | "replied" | "signed_up";
+  message_text: string | null;
+  source: string | null;
+  priority_score: number;
+  sent_at: string | null;
+  created_at: string;
+  updated_at: string;
+  notes: string | null;
+  developer_id: string | null;
+  signup_id: string | null;
+}
+
+interface OutreachStats {
+  total: number;
+  pending: number;
+  sent: number;
+  failed: number;
+  replied: number;
+  signed_up: number;
 }
 
 interface HashtagSignup {
@@ -83,7 +114,7 @@ const emptyForm = {
   featured: false,
 };
 
-type Tab = "resources" | "signups";
+type Tab = "resources" | "signups" | "outreach";
 
 export function AdminClient() {
   const { data: session, status } = useSession();
@@ -102,6 +133,21 @@ export function AdminClient() {
   const [signupsTotal, setSignupsTotal] = useState(0);
   const [signupsPage, setSignupsPage] = useState(1);
   const [signupsFilter, setSignupsFilter] = useState<string>("all");
+
+  // Outreach state
+  const [outreach, setOutreach] = useState<OutreachRecord[]>([]);
+  const [outreachLoading, setOutreachLoading] = useState(false);
+  const [outreachTotal, setOutreachTotal] = useState(0);
+  const [outreachPage, setOutreachPage] = useState(1);
+  const [outreachFilter, setOutreachFilter] = useState<string>("all");
+  const [outreachStats, setOutreachStats] = useState<OutreachStats>({
+    total: 0,
+    pending: 0,
+    sent: 0,
+    failed: 0,
+    replied: 0,
+    signed_up: 0,
+  });
 
   // Check admin status
   useEffect(() => {
@@ -160,9 +206,37 @@ export function AdminClient() {
     await fetchSignups(signupsPage);
   };
 
+  const fetchOutreach = async (page = 1, statusFilter = outreachFilter) => {
+    setOutreachLoading(true);
+    const params = new URLSearchParams({ page: String(page), limit: "50" });
+    if (statusFilter !== "all") params.set("status", statusFilter);
+    const res = await fetch(`/api/admin/outreach?${params}`);
+    const data = await res.json();
+    setOutreach(data.outreach || []);
+    setOutreachTotal(data.total || 0);
+    setOutreachPage(page);
+    if (data.stats) setOutreachStats(data.stats);
+    setOutreachLoading(false);
+  };
+
+  const updateOutreachStatus = async (
+    id: string,
+    newStatus: OutreachRecord["outreach_status"]
+  ) => {
+    await fetch("/api/admin/outreach", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, outreach_status: newStatus }),
+    });
+    await fetchOutreach(outreachPage);
+  };
+
   useEffect(() => {
     if (activeTab === "signups" && isAdmin && signups.length === 0) {
       fetchSignups();
+    }
+    if (activeTab === "outreach" && isAdmin && outreach.length === 0) {
+      fetchOutreach();
     }
   }, [activeTab, isAdmin]);
 
@@ -426,6 +500,22 @@ export function AdminClient() {
               </span>
             )}
           </button>
+          <button
+            onClick={() => setActiveTab("outreach")}
+            className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === "outreach"
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Send className="w-4 h-4" />
+            Outreach
+            {outreachStats.total > 0 && (
+              <span className="text-xs px-1.5 py-0.5 rounded-full bg-primary/20 text-primary">
+                {outreachStats.total}
+              </span>
+            )}
+          </button>
         </div>
 
         {/* Resources Tab */}
@@ -527,6 +617,204 @@ export function AdminClient() {
                 ))
               )}
             </div>
+          </>
+        )}
+
+        {/* Outreach Tab */}
+        {activeTab === "outreach" && (
+          <>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-3xl font-bold">Outreach Pipeline</h1>
+                <p className="text-muted-foreground mt-1">
+                  Track automated outreach to discovered builders
+                </p>
+              </div>
+            </div>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+              {[
+                { label: "Pending", value: outreachStats.pending, icon: Clock, color: "text-yellow-400" },
+                { label: "Sent", value: outreachStats.sent, icon: Send, color: "text-blue-400" },
+                { label: "Failed", value: outreachStats.failed, icon: XCircle, color: "text-red-400" },
+                { label: "Replied", value: outreachStats.replied, icon: MessageSquare, color: "text-green-400" },
+                { label: "Signed Up", value: outreachStats.signed_up, icon: CheckCircle, color: "text-primary" },
+              ].map(({ label, value, icon: Icon, color }) => (
+                <div key={label} className="glass-card rounded-xl p-4 text-center">
+                  <Icon className={`w-5 h-5 ${color} mx-auto mb-1`} />
+                  <div className="text-2xl font-bold">{value}</div>
+                  <div className="text-xs text-muted-foreground">{label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Status Filter */}
+            <div className="flex gap-2 mb-6">
+              {["all", "pending", "sent", "failed", "replied", "signed_up"].map((f) => (
+                <button
+                  key={f}
+                  onClick={() => {
+                    setOutreachFilter(f);
+                    fetchOutreach(1, f);
+                  }}
+                  className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
+                    outreachFilter === f
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {f === "signed_up" ? "Signed Up" : f.charAt(0).toUpperCase() + f.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            {outreachLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : outreach.length === 0 ? (
+              <div className="glass-card rounded-xl p-12 text-center">
+                <Send className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">
+                  No outreach records yet. The pipeline will start
+                  contacting discovered builders automatically.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="space-y-3">
+                  {outreach.map((record) => (
+                    <div
+                      key={record.id}
+                      className="glass-card rounded-xl p-4 flex items-start gap-4"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <a
+                            href={`https://x.com/${record.twitter_username}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold hover:text-primary transition-colors"
+                          >
+                            @{record.twitter_username}
+                          </a>
+                          <span
+                            className={`text-xs px-2 py-0.5 rounded-full ${
+                              record.outreach_status === "sent"
+                                ? "bg-blue-500/20 text-blue-400"
+                                : record.outreach_status === "replied"
+                                  ? "bg-green-500/20 text-green-400"
+                                  : record.outreach_status === "signed_up"
+                                    ? "bg-primary/20 text-primary"
+                                    : record.outreach_status === "failed"
+                                      ? "bg-red-500/20 text-red-400"
+                                      : "bg-yellow-500/20 text-yellow-400"
+                            }`}
+                          >
+                            {record.outreach_status === "signed_up" ? "Signed Up" : record.outreach_status}
+                          </span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                            {record.outreach_type}
+                          </span>
+                          {record.source && (
+                            <span className="text-xs text-muted-foreground">
+                              via {record.source}
+                            </span>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            priority: {record.priority_score}
+                          </span>
+                        </div>
+
+                        {record.message_text && (
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                            {record.message_text}
+                          </p>
+                        )}
+
+                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                          <span>
+                            Created: {new Date(record.created_at).toLocaleDateString()}
+                          </span>
+                          {record.sent_at && (
+                            <span>
+                              Sent: {new Date(record.sent_at).toLocaleDateString()}
+                            </span>
+                          )}
+                          {record.developer_id && (
+                            <a
+                              href={`/builder/${record.twitter_username}`}
+                              className="inline-flex items-center gap-1 text-primary hover:underline"
+                            >
+                              <Eye className="w-3 h-3" />
+                              Profile
+                            </a>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {record.outreach_status === "sent" && (
+                          <button
+                            onClick={() => updateOutreachStatus(record.id, "replied")}
+                            className="p-2 rounded-lg hover:bg-green-500/10 text-muted-foreground hover:text-green-400 transition-colors"
+                            title="Mark as replied"
+                          >
+                            <MessageSquare className="w-4 h-4" />
+                          </button>
+                        )}
+                        {(record.outreach_status === "sent" || record.outreach_status === "replied") && (
+                          <button
+                            onClick={() => updateOutreachStatus(record.id, "signed_up")}
+                            className="p-2 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                            title="Mark as signed up"
+                          >
+                            <CheckCircle className="w-4 h-4" />
+                          </button>
+                        )}
+                        {record.outreach_status === "failed" && (
+                          <button
+                            onClick={() => updateOutreachStatus(record.id, "pending")}
+                            className="p-2 rounded-lg hover:bg-yellow-500/10 text-muted-foreground hover:text-yellow-400 transition-colors"
+                            title="Retry (set to pending)"
+                          >
+                            <Clock className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {outreachTotal > 50 && (
+                  <div className="flex items-center justify-center gap-4 mt-6">
+                    <button
+                      onClick={() => fetchOutreach(outreachPage - 1)}
+                      disabled={outreachPage <= 1}
+                      className="px-4 py-2 rounded-lg bg-secondary text-sm disabled:opacity-50 hover:bg-secondary/80 transition-colors"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-sm text-muted-foreground">
+                      Page {outreachPage} of{" "}
+                      {Math.ceil(outreachTotal / 50)}
+                    </span>
+                    <button
+                      onClick={() => fetchOutreach(outreachPage + 1)}
+                      disabled={
+                        outreachPage >= Math.ceil(outreachTotal / 50)
+                      }
+                      className="px-4 py-2 rounded-lg bg-secondary text-sm disabled:opacity-50 hover:bg-secondary/80 transition-colors"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </>
         )}
 
