@@ -1,7 +1,50 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import crypto from "crypto";
 
 export const maxDuration = 60;
+
+// OAuth 1.0a helper for posting tweets
+function percentEncode(str: string): string {
+  return encodeURIComponent(str).replace(/[!'()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+}
+
+async function postTweet(text: string): Promise<Response> {
+  const url = "https://api.twitter.com/2/tweets";
+  const method = "POST";
+  const oauthParams: Record<string, string> = {
+    oauth_consumer_key: process.env.TWITTER_API_KEY!,
+    oauth_nonce: crypto.randomBytes(16).toString("hex"),
+    oauth_signature_method: "HMAC-SHA1",
+    oauth_timestamp: Math.floor(Date.now() / 1000).toString(),
+    oauth_token: process.env.TWITTER_ACCESS_TOKEN!,
+    oauth_version: "1.0",
+  };
+
+  // Create signature base string
+  const paramString = Object.keys(oauthParams)
+    .sort()
+    .map((k) => `${percentEncode(k)}=${percentEncode(oauthParams[k])}`)
+    .join("&");
+  const baseString = `${method}&${percentEncode(url)}&${percentEncode(paramString)}`;
+  const signingKey = `${percentEncode(process.env.TWITTER_API_SECRET!)}&${percentEncode(process.env.TWITTER_ACCESS_SECRET!)}`;
+  const signature = crypto.createHmac("sha1", signingKey).update(baseString).digest("base64");
+  oauthParams.oauth_signature = signature;
+
+  const authHeader = "OAuth " + Object.keys(oauthParams)
+    .sort()
+    .map((k) => `${percentEncode(k)}="${percentEncode(oauthParams[k])}"`)
+    .join(", ");
+
+  return fetch(url, {
+    method,
+    headers: {
+      Authorization: authHeader,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ text }),
+  });
+}
 
 function isAuthorized(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
@@ -125,28 +168,12 @@ export async function GET(request: NextRequest) {
 
   const batch = scored.slice(0, DAILY_CAP);
 
-  // Initialize Twitter write client if possible
-  let twitterClient: { v2: { tweet: (text: string) => Promise<unknown> } } | null = null;
-  if (hasWriteAccess) {
-    try {
-      const { TwitterApi } = await import("twitter-api-v2");
-      twitterClient = new TwitterApi({
-        appKey: process.env.TWITTER_API_KEY!,
-        appSecret: process.env.TWITTER_API_SECRET!,
-        accessToken: process.env.TWITTER_ACCESS_TOKEN!,
-        accessSecret: process.env.TWITTER_ACCESS_SECRET!,
-      });
-    } catch {
-      console.error("[Outreach] Failed to init Twitter client");
-    }
-  }
-
   for (const candidate of batch) {
     totals.processed++;
     const message = getTemplate(candidate.twitter_username);
     const source = candidate.hashtag_used?.startsWith("followers:") ? "follower_scrape" : "hashtag_monitor";
 
-    if (!twitterClient) {
+    if (!hasWriteAccess) {
       // Dry run — log as pending
       await supabase.from("outreach_log").upsert(
         {
@@ -165,7 +192,11 @@ export async function GET(request: NextRequest) {
       totals.pending++;
     } else {
       try {
-        await twitterClient.v2.tweet(message);
+        // Post tweet using OAuth 1.0a signed request
+        const tweetRes = await postTweet(message);
+        if (!tweetRes.ok) {
+          throw new Error(`Twitter API ${tweetRes.status}: ${await tweetRes.text()}`);
+        }
         await supabase.from("outreach_log").upsert(
           {
             twitter_username: candidate.twitter_username,
